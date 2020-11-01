@@ -45,8 +45,9 @@ class GameManager:
         if currTime - self.prevTime > timeLimit + allowance:
             self.over = True
         else:
-            while time.clock() - self.prevTime < timeLimit + allowance:
-                pass
+            # Completely redundant
+            # while time.clock() - self.prevTime < timeLimit + allowance:
+            #    pass
 
             self.prevTime = time.clock()
 
