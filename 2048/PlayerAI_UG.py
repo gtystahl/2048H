@@ -6,8 +6,9 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-Dmax=2
+Dmax=6
 Tmax=.02
+possiblenexts = [2, 4]
 
 
 
@@ -59,7 +60,7 @@ class PlayerAI(BaseAI):
 
             if v2>v:
                 v=v2
-                move=a2
+                move=a
 
                 alpha=max([v,alpha])
                 
@@ -79,33 +80,24 @@ class PlayerAI(BaseAI):
 
         v=PLUS_INFINITY
 
-        for a in [0,1,2,3]:
+        cells = availablecells(puzzle)
+        if not cells:
+            return MINUS_INFINITY, move
 
-            copy = myCopy2(puzzle)
-            
-            # copy is the next puzzle state
-            if a==0:
-                copy=slideUp(copy)
-            elif a==1:
-                copy=slideDown(copy)
-            elif a==2:
-                copy=slideLeft(copy)
-            else:
-                copy=slideRight(copy)
+        # Need to find a way to return the percentage of failure
+        for cellnum in cells:
+            for val in possiblenexts:
+                copy = myCopy2(puzzle)
+                copy[cellnum][0] = val
 
-            
-            v2,a2=self.maxVal(copy,alpha,beta,a,depth)
+                v2,a2=self.maxVal(copy,alpha,beta,move,depth)
 
-            v2 += H2(puzzle, a)
+                if v2<v:
+                    v=v2
+                    move=a2
 
-            if v2<v:
-                v=v2
-                move=a2
+                    beta=min([v,beta])
 
-                beta=min([v,beta])
-                
-            if v<=alpha:
-                return v,move
                 
         return v,move
 
@@ -145,7 +137,9 @@ def H2(puzzle,move):
 
 
 def H3(puzzle):
-    #Other row vals
+    # This tries to get all the higher value on the bottom
+
+    # Other row vals
     orv = []
 
     for a in range(4):
@@ -177,7 +171,7 @@ def H4(puzzle):
 
     for key in nums:
         num = nums[key]
-        val += (3 ** (math.log2(key))) * num
+        val += (math.log2(key) ** 3) * num
 
     return val
 
@@ -198,7 +192,7 @@ def H5(puzzle):
                 else:
                     checkval = itemval
         if rowgood:
-            val += rowval * 3
+            val += rowval
     return val
 
 
@@ -214,7 +208,15 @@ def myCopy2(s):
 
     return n
 
+def availablecells(puzzle):
+    cells = []
 
+    for i in range(len(puzzle)):
+        cell = puzzle[i]
+        if cell[0] == 0:
+            cells.append(i)
+
+    return cells
 
 
 
