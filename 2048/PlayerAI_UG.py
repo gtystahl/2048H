@@ -3,10 +3,12 @@ import time
 import sys
 from Grid import Grid
 from BaseAI import BaseAI
+import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-Dmax=2
+Dmax=6
 Tmax=.02
+possiblenexts = [2, 4]
 
 
 
@@ -58,7 +60,7 @@ class PlayerAI(BaseAI):
 
             if v2>v:
                 v=v2
-                move=a2
+                move=a
 
                 alpha=max([v,alpha])
                 
@@ -78,33 +80,24 @@ class PlayerAI(BaseAI):
 
         v=PLUS_INFINITY
 
-        for a in [0,1,2,3]:
+        cells = availablecells(puzzle)
+        if not cells:
+            return MINUS_INFINITY, move
 
-            copy = myCopy2(puzzle)
-            
-            # copy is the next puzzle state
-            if a==0:
-                copy=slideUp(copy)
-            elif a==1:
-                copy=slideDown(copy)
-            elif a==2:
-                copy=slideLeft(copy)
-            else:
-                copy=slideRight(copy)
+        # Need to find a way to return the percentage of failure
+        for cellnum in cells:
+            for val in possiblenexts:
+                copy = myCopy2(puzzle)
+                copy[cellnum][0] = val
 
-            
-            v2,a2=self.maxVal(copy,alpha,beta,a,depth)
+                v2,a2=self.maxVal(copy,alpha,beta,move,depth)
 
-            v2 += H2(puzzle, a)
+                if v2<v:
+                    v=v2
+                    move=a2
 
-            if v2<v:
-                v=v2
-                move=a2
+                    beta=min([v,beta])
 
-                beta=min([v,beta])
-                
-            if v<=alpha:
-                return v,move
                 
         return v,move
 
@@ -143,8 +136,68 @@ def H2(puzzle,move):
     return diff
 
 
+def H3(puzzle):
+    # This tries to get all the higher value on the bottom
+
+    # Other row vals
+    orv = []
+
+    for a in range(4):
+        val = 0
+        for b in range(4):
+            rowval = puzzle[(a * 4) + b][0]
+            val += rowval
+
+        if a != 3:
+            orv.append(val)
+        else:
+            if val > max(orv):
+                return val
+    return 0
+
+
+def H4(puzzle):
+    # This gets the amount of higher valued things
+    val = 0
+    nums = {}
+
+    for i in range(len(puzzle)):
+        itemval = puzzle[i][0]
+        if itemval != 0:
+            if itemval in nums:
+                nums[itemval] += 1
+            else:
+                nums[itemval] = 1
+
+    for key in nums:
+        num = nums[key]
+        val += (math.log2(key) ** 3) * num
+
+    return val
+
+
+def H5(puzzle):
+    # This tries to get rows in the order from greatest on the left to least on right
+    val = 0
+    for a in range(4):
+        rowgood = True
+        checkval = PLUS_INFINITY
+        rowval = 0
+        for b in range(4):
+            itemval = puzzle[(a * 4) + b][0]
+            rowval += itemval
+            if itemval != 0:
+                if checkval < itemval:
+                    rowgood = False
+                else:
+                    checkval = itemval
+        if rowgood:
+            val += rowval
+    return val
+
+
 def evaluateh(puzzle, move):
-    return 1.0*H1(puzzle)
+    return 1.0*H1(puzzle) + 1.0*H3(puzzle) + 1.0*H4(puzzle) + 1.0*H5(puzzle)
 
 
 def myCopy2(s):
@@ -155,7 +208,15 @@ def myCopy2(s):
 
     return n
 
+def availablecells(puzzle):
+    cells = []
 
+    for i in range(len(puzzle)):
+        cell = puzzle[i]
+        if cell[0] == 0:
+            cells.append(i)
+
+    return cells
 
 
 

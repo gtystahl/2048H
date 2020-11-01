@@ -6,7 +6,10 @@ vecIndex = [UP, DOWN, LEFT, RIGHT] = range(4)
 class Grid:
     def __init__(self, size = 4):
         self.size = size
+        # Good map
         self.map = [[0] * self.size for i in range(self.size)]
+        # Fake map for testing
+        # self.map = [[4, 2, 8, 2], [16, 4, 4, 4], [32, 16, 8, 16], [64, 32, 16, 2]]
 
     # Make a Deep Copy of This Object
     def clone(self):
