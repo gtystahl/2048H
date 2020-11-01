@@ -5,6 +5,7 @@ from Displayer  import Displayer
 from random       import randint
 import time
 
+# Should be 2
 defaultInitialTiles = 2
 defaultProbability = 0.9
 

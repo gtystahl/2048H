@@ -3,6 +3,7 @@ import time
 import sys
 from Grid import Grid
 from BaseAI import BaseAI
+import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
 Dmax=2
@@ -143,8 +144,66 @@ def H2(puzzle,move):
     return diff
 
 
+def H3(puzzle):
+    #Other row vals
+    orv = []
+
+    for a in range(4):
+        val = 0
+        for b in range(4):
+            rowval = puzzle[(a * 4) + b][0]
+            val += rowval
+
+        if a != 3:
+            orv.append(val)
+        else:
+            if val > max(orv):
+                return val
+    return 0
+
+
+def H4(puzzle):
+    # This gets the amount of higher valued things
+    val = 0
+    nums = {}
+
+    for i in range(len(puzzle)):
+        itemval = puzzle[i][0]
+        if itemval != 0:
+            if itemval in nums:
+                nums[itemval] += 1
+            else:
+                nums[itemval] = 1
+
+    for key in nums:
+        num = nums[key]
+        val += (3 ** (math.log2(key))) * num
+
+    return val
+
+
+def H5(puzzle):
+    # This tries to get rows in the order from greatest on the left to least on right
+    val = 0
+    for a in range(4):
+        rowgood = True
+        checkval = PLUS_INFINITY
+        rowval = 0
+        for b in range(4):
+            itemval = puzzle[(a * 4) + b][0]
+            rowval += itemval
+            if itemval != 0:
+                if checkval < itemval:
+                    rowgood = False
+                else:
+                    checkval = itemval
+        if rowgood:
+            val += rowval * 3
+    return val
+
+
 def evaluateh(puzzle, move):
-    return 1.0*H1(puzzle)
+    return 1.0*H1(puzzle) + 1.0*H3(puzzle) + 1.0*H4(puzzle) + 1.0*H5(puzzle)
 
 
 def myCopy2(s):
