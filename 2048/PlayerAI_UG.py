@@ -31,7 +31,7 @@ class PlayerAI(BaseAI):
         depth+=1
 
         if depth>=Dmax:
-            evaluate=1.0*H1(puzzle)+1.0*H2(puzzle,move)
+            evaluate = evaluateh(puzzle, move)
 
             return evaluate,move
 
@@ -39,7 +39,7 @@ class PlayerAI(BaseAI):
 
         for a in [0,1,2,3]:
 
-            copy=myCopy2(puzzle)
+            copy = myCopy2(puzzle)
             
             # copy is the next puzzle state
             if a==0:
@@ -53,6 +53,8 @@ class PlayerAI(BaseAI):
 
             
             v2,a2=self.minVal(copy,alpha,beta,a,depth)
+
+            v2 += H2(puzzle, a)
 
             if v2>v:
                 v=v2
@@ -70,7 +72,7 @@ class PlayerAI(BaseAI):
         depth+=1
 
         if depth>=Dmax:
-            evaluate=1.0*H1(puzzle)+15.0/4.0*H2(puzzle,move)
+            evaluate = evaluateh(puzzle, move)
 
             return evaluate,move
 
@@ -78,7 +80,7 @@ class PlayerAI(BaseAI):
 
         for a in [0,1,2,3]:
 
-            copy=myCopy2(puzzle)
+            copy = myCopy2(puzzle)
             
             # copy is the next puzzle state
             if a==0:
@@ -93,6 +95,8 @@ class PlayerAI(BaseAI):
             
             v2,a2=self.maxVal(copy,alpha,beta,a,depth)
 
+            v2 += H2(puzzle, a)
+
             if v2<v:
                 v=v2
                 move=a2
@@ -104,22 +108,23 @@ class PlayerAI(BaseAI):
                 
         return v,move
 
-# count number of free spaces    
+
 def H1(puzzle):
-    count=0
+    # This is the number of free spaces
+
+    count = 0
     for i in puzzle:
-        if i[0]==0:
-            count+=1
+        if i[0] == 0:
+            count += 1
 
     return count
 
 
 def H2(puzzle,move):
-    
+    # This tries to find merge number from this config
 
-    
-    copy=myCopy2(puzzle)
-    numFree=H1(puzzle)# number of free spaces before move
+    copy = myCopy2(puzzle)
+    numFree = H1(puzzle) # number of free spaces before move
     if move==0:
         copy=slideUp(copy)
     elif move==1:
@@ -131,13 +136,17 @@ def H2(puzzle,move):
 
     curFree=H1(copy) # number of free tiles for speculative board
 
-    diff=curFree-numFree# diff is the number of merges
+    diff=curFree-numFree # diff is the number of merges
 
     
 
     return diff
-        
-    
+
+
+def evaluateh(puzzle, move):
+    return 1.0*H1(puzzle)
+
+
 def myCopy2(s):
     n=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
 
