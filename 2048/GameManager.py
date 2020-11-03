@@ -19,7 +19,7 @@ actionDic = {
 (PLAYER_TURN, COMPUTER_TURN) = (0, 1)
 
 # Time Limit Before Losing
-timeLimit = 2.0
+timeLimit = 0.2
 allowance = 0.05
 
 class GameManager:
@@ -103,10 +103,11 @@ class GameManager:
                 self.displayer.display(self.grid)
 
             # Exceeding the Time Allotted for Any Turn Terminates the Game
-            # self.updateAlarm(time.clock())
+            self.updateAlarm(time.clock())
 
             turn = 1 - turn
         print(maxTile)
+        return maxTile
 
     def isGameOver(self):
         return not self.grid.canMove()
@@ -124,16 +125,21 @@ class GameManager:
         self.grid.setCellValue(cell, tileValue)
 
 def main():
-    gameManager = GameManager()
-    playerAI  	= PlayerAI()
-    computerAI  = ComputerAI()
-    displayer 	= Displayer()
+    lst = []
+    for i in range(10):
+        gameManager = GameManager()
+        playerAI  	= PlayerAI()
+        computerAI  = ComputerAI()
+        displayer 	= Displayer()
 
-    gameManager.setDisplayer(displayer)
-    gameManager.setPlayerAI(playerAI)
-    gameManager.setComputerAI(computerAI)
+        gameManager.setDisplayer(displayer)
+        gameManager.setPlayerAI(playerAI)
+        gameManager.setComputerAI(computerAI)
 
-    gameManager.start()
+        lst.append(gameManager.start())
+
+    for i in lst:
+        print(i)
 
 if __name__ == '__main__':
     main()
