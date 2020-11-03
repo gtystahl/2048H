@@ -6,7 +6,7 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-Dmax=6
+Dmax=4
 Tmax=.02
 possiblenexts = [2, 4]
 
@@ -39,7 +39,7 @@ class PlayerAI(BaseAI):
 
         v=MINUS_INFINITY
 
-        for a in [0,1,2,3]:
+        for a in [1,2,3,0]:
 
             copy = myCopy2(puzzle)
             
@@ -53,19 +53,20 @@ class PlayerAI(BaseAI):
             else:
                 copy=slideRight(copy)
 
-            
-            v2,a2=self.minVal(copy,alpha,beta,a,depth)
 
-            v2 += H2(puzzle, a)
+            if copy != puzzle:
+                v2,a2=self.minVal(copy,alpha,beta,a,depth)
 
-            if v2>v:
-                v=v2
-                move=a
+                v2 += 2.0 * H2(puzzle, a)
 
-                alpha=max([v,alpha])
-                
-            if v>=beta:
-                return v,move
+                if v2>v:
+                    v=v2
+                    move=a
+
+                    alpha=max([v,alpha])
+
+                if v>=beta:
+                    return v,move
                 
         return v,move
 
@@ -196,8 +197,54 @@ def H5(puzzle):
     return val
 
 
+def H6(puzzle):
+    val = 0
+    for i in range(len(puzzle)):
+        cell = puzzle[i]
+        lst = [1, -1, 4, -4]
+        for num in lst:
+            try:
+                loc = i + num
+                if loc >= 0:
+                    cell2 = puzzle[loc]
+                    if cell[0] == cell2[0]:
+                        val += (cell[0]/4)
+                    #elif cell2[0]/2 == cell[0]:
+                    #    val += (cell[0]/4)
+            except:
+                val += 0
+    return val
+
+
+def H7(puzzle):
+    val = 0
+    for i in range(len(puzzle)):
+        cell = puzzle[i]
+        if cell[0] != 0:
+            # reduced cell val
+            rcv = math.log2(cell[0])
+            numbad = 0
+            lst = [1, -1, 4, -4]
+            for num in lst:
+                try:
+                    loc = i + num
+                    if loc >= 0:
+                        cell2 = puzzle[loc]
+                        rcv2 = math.log2(cell2[0])
+                        if not (rcv2 - 5 < rcv < rcv2 + 5):
+                            numbad += 1
+                        # elif cell2[0]/2 == cell[0]:
+                        #    val += (cell[0]/4)
+                except:
+                    val += 0
+            if numbad > 2:
+                val -= cell[0]
+    return val
+
+
+
 def evaluateh(puzzle, move):
-    return 1.0*H1(puzzle) + 1.0*H3(puzzle) + 1.0*H4(puzzle) + 1.0*H5(puzzle)
+    return 2.0*H1(puzzle) + 2.0*H3(puzzle) + 1.0*H4(puzzle) + 1.0*H5(puzzle) + 1.0*H6(puzzle) + 1.0*H7(puzzle)
 
 
 def myCopy2(s):
