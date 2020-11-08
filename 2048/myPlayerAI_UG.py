@@ -6,185 +6,101 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-MAX_DEPTH=2
-TIME_MAX=.2
-
-
-class Node(object):
-    def __init__(self,pzle): 
-        self.parent=None
-        self.puzzle=pzle
-        self.depth=0
-        self.move=-1
-    
-    def setMove(self,m):
-        self.move=m
-
-    def getMove(self):
-        return self.move
-
-   
-
-    def getPuzzle(self):
-        return self.puzzle
-    
-    def getParent(self):
-        return self.parent
-
-    def setParent(self,parent):
-        self.parent=parent
-
-def traceMove(node,pzzle):
-    
-    move=-1
-    
-    move1=-1
-    while node!=None:
-        move1=move
-        move=node.getMove()
-       
-        node=node.getParent()
-
-    if move1==-1:
-        np=myCopy2(pzzle) 
-        
-        
-        np0=H1(slideUp(np))
-        np=myCopy2(pzzle)
-        np1=H1(slideLeft(np))
-
-        if np0>=np1:
-            return 0
-        return 3
-    
-    return move1
+Dmax=4
+Tmax=.02
+possiblenexts = [2, 4]
 
 
 
-class value(object):
-    def __init__(self,n,v):
-        self.node=n
-        self.value=v
-
-    def getNode(self):
-        return self.node
-    def getValue(self):
-        return value
 
     
 class PlayerAI(BaseAI):
-    def getMove(self, grid):
+    def __init__(self):
+        self.board=0
+
+
+    def getMove(self,grid):
+        move=0
         puzzle=transformGrid(grid.map)
-        node=Node(puzzle)
-        
-        alpha=value(None,MINUS_INFINITY)
-        beta=value(None,PLUS_INFINITY)
+        # max min with alpha beta pruning
         depth=0
-        res=maxValue(node,alpha,beta,depth,time.clock())     
-        return  traceMove(res.getNode(),puzzle)
+        V,move=self.maxVal(puzzle,MINUS_INFINITY,PLUS_INFINITY,move,depth)
 
-
-def maxValue(node,alpha,beta,depth,t_time):
+        return move
     
-    "generate up(0) down(1) left(2) right(3) action nodes"
-    
+    def maxVal(self,puzzle,alpha,beta,move,depth):
+        #evaluation function goes here  eval=1*H1(puzzle)
+        depth+=1
 
-    
-    puzzle=node.getPuzzle()
+        if depth>=Dmax:
+            evaluate = evaluateh(puzzle, move)
 
-    c_time=time.clock()-t_time
-    # c_time=0
-    
-    if depth==MAX_DEPTH or c_time>TIME_MAX:
-        move=node.getMove()
-        evaluate=evaluateh(node,puzzle,move)
-        
-        val=value(node,evaluate)
-        
-        return val
-    
-    
-    for a in [1,2,3,0]:
-        copy=myCopy2(puzzle)
+            return evaluate,move
 
-        # if depth == 0:
-        #    print()
-        
-        if a==0:
-            copy=slideUp(copy)
-        elif a==1:
-            copy=slideDown(copy)
-        elif a==2:
-            copy=slideLeft(copy)
-        else:
-            copy=slideRight(copy)
-        
+        v=MINUS_INFINITY
 
-        if not isSame(copy,puzzle):
-            reset(copy)
-            newNode=Node(copy)
-            newNode.setParent(node)
-          
-            newNode.setMove(a)
-    
-            temp=minValue(newNode,alpha,beta,depth,t_time)
+        for a in [1,2,3,0]:
 
-            # if depth == 0:
-            #    print()
-
-            if temp.value>alpha.value:
-                alpha=temp
-
-            if alpha.value>=beta.value:
-                return beta
-    return alpha
-
-def minValue(node,alpha,beta,depth,t_time):
-
-    "generate up(0) down(1) left(2) right(3) action nodes"
-    depth=depth+1
-
-    
-    puzzle=node.getPuzzle()
-    h=H1(puzzle)
-    if h==0:
-        move=node.getMove()
-        evaluate=evaluateh(node,puzzle,move)
-        
-        #val=value(node,evaluate)
-        
-        
-        return evaluate
-    
-    for move in range(16):
-        copy=myCopy2(puzzle) 
-
-        if(copy[move][0]==0):
-
-            copy[move][0]=2
-            newNode=Node(copy)
-            newNode.setParent(node)
+            copy = myCopy2(puzzle)
+            
+            # copy is the next puzzle state
+            if a==0:
+                copy=slideUp(copy)
+            elif a==1:
+                copy=slideDown(copy)
+            elif a==2:
+                copy=slideLeft(copy)
+            else:
+                copy=slideRight(copy)
 
 
-            temp=maxValue(newNode,alpha,beta,depth,t_time)
+            if copy != puzzle:
+                v2,a2=self.minVal(copy,alpha,beta,a,depth)
 
-            if temp.value<beta.value:
-                beta=temp
+                v2 += 2.0 * H2(puzzle, a)
 
-            if beta.value<=alpha.value:
-                return alpha
-    return beta
-      
+                if v2>v:
+                    v=v2
+                    move=a
 
+                    alpha=max([v,alpha])
 
+                if v>=beta:
+                    return v,move
+                
+        return v,move
 
-def myCopy2(s):
-    n=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+    def minVal(self,puzzle,alpha,beta,move,depth):
+        #evaluation function goes here  eval=1*H1(puzzle)
+        depth+=1
 
-    for i in range(16):
-        n[i][0]=s[i][0]
+        if depth>=Dmax:
+            evaluate = evaluateh(puzzle, move)
 
-    return n
+            return evaluate,move
+
+        v=PLUS_INFINITY
+
+        cells = availablecells(puzzle)
+        if not cells:
+            return MINUS_INFINITY, move
+
+        # Need to find a way to return the percentage of failure
+        for cellnum in cells:
+            for val in possiblenexts:
+                copy = myCopy2(puzzle)
+                copy[cellnum][0] = val
+
+                v2,a2=self.maxVal(copy,alpha,beta,move,depth)
+
+                if v2<v:
+                    v=v2
+                    move=a2
+
+                    beta=min([v,beta])
+
+                
+        return v,move
 
 
 def H1(puzzle):
@@ -198,32 +114,34 @@ def H1(puzzle):
     return count
 
 
-def H2(puzzle, move):
+def H2(puzzle,move):
     # This tries to find merge number from this config
 
     copy = myCopy2(puzzle)
-    numFree = H1(puzzle)  # number of free spaces before move
-    if move == 0:
-        copy = slideUp(copy)
-    elif move == 1:
-        copy = slideDown(copy)
-    elif move == 2:
-        copy = slideLeft(copy)
+    numFree = H1(puzzle) # number of free spaces before move
+    if move==0:
+        copy=slideUp(copy)
+    elif move==1:
+        copy=slideDown(copy)
+    elif move==2:
+        copy=slideLeft(copy)
     else:
-        copy = slideRight(copy)
+        copy=slideRight(copy)
 
-    curFree = H1(copy)  # number of free tiles for speculative board
+    curFree=H1(copy) # number of free tiles for speculative board
 
-    diff = curFree - numFree  # diff is the number of merges
+    diff=curFree-numFree # diff is the number of merges
+
+    
 
     return diff
 
 
 def H3(puzzle):
-    # This tries to get all the higher values towards the bottom
+    # This tries to get all the higher value on the bottom
 
-    # row vals
-    rv = []
+    # Other row vals
+    orv = []
 
     for a in range(4):
         val = 0
@@ -231,20 +149,11 @@ def H3(puzzle):
             rowval = puzzle[(a * 4) + b][0]
             val += rowval
 
-        rv.append(val)
-
-    good = True
-    lastrowval = -1
-    totalval = 0
-    for rowval in rv:
-        if rowval < lastrowval:
-            good = False
-        lastrowval = rowval
-        totalval += rowval
-
-    if good:
-        return totalval
-
+        if a != 3:
+            orv.append(val)
+        else:
+            if val > max(orv):
+                return val
     return 0
 
 
@@ -289,7 +198,6 @@ def H5(puzzle):
 
 
 def H6(puzzle):
-    # Tries to get the same stuff next to each other
     val = 0
     for i in range(len(puzzle)):
         cell = puzzle[i]
@@ -300,8 +208,8 @@ def H6(puzzle):
                 if loc >= 0:
                     cell2 = puzzle[loc]
                     if cell[0] == cell2[0]:
-                        val += (cell[0] / 4)
-                    # elif cell2[0]/2 == cell[0]:
+                        val += (cell[0]/4)
+                    #elif cell2[0]/2 == cell[0]:
                     #    val += (cell[0]/4)
             except:
                 val += 0
@@ -309,7 +217,6 @@ def H6(puzzle):
 
 
 def H7(puzzle):
-    # tries to make sure that there arent stuff stuck where it cant be merged
     val = 0
     for i in range(len(puzzle)):
         cell = puzzle[i]
@@ -324,7 +231,7 @@ def H7(puzzle):
                     if loc >= 0:
                         cell2 = puzzle[loc]
                         rcv2 = math.log2(cell2[0])
-                        if not (rcv2 - 3 < rcv < rcv2 + 3):
+                        if not (rcv2 - 5 < rcv < rcv2 + 5):
                             numbad += 1
                         # elif cell2[0]/2 == cell[0]:
                         #    val += (cell[0]/4)
@@ -334,35 +241,32 @@ def H7(puzzle):
                 val -= cell[0]
     return val
 
-def H8(puzzle):
-    # This tries to get all the higher value on the bottom
 
-    # Other row vals
-    orv = []
 
-    for a in range(4):
-        val = 0
-        for b in range(4):
-            rowval = puzzle[(a * 4) + b][0]
-            val += rowval
+def evaluateh(puzzle, move):
+    return 2.0*H1(puzzle) + 2.0*H3(puzzle) + 1.0*H4(puzzle) + 1.0*H5(puzzle) + 1.0*H6(puzzle) + 1.0*H7(puzzle)
 
-        if a != 3:
-            orv.append(val)
-        else:
-            if val >= max(orv):
-                return val
-    return 0
 
-def H9(puzzle):
-    # Tries to get the ai to not have a 0 in the corner
-    box = puzzle[12][0]
-    if box <= 4:
-        return -500
-    else:
-        return 0
-def evaluateh(n, puzzle, move):
-    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + 1.0 * H3(puzzle) + 1.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
-        puzzle) + 1.0 * H8(puzzle) + 1.0 * H9(puzzle)
+def myCopy2(s):
+    n=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+
+    for i in range(16):
+        n[i][0]=s[i][0]
+
+    return n
+
+def availablecells(puzzle):
+    cells = []
+
+    for i in range(len(puzzle)):
+        cell = puzzle[i]
+        if cell[0] == 0:
+            cells.append(i)
+
+    return cells
+
+
+
 
 
 
