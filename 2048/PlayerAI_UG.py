@@ -107,8 +107,8 @@ def maxValue(node,alpha,beta,depth,t_time):
     for a in [1,2,3,0]:
         copy=myCopy2(puzzle)
 
-        if depth == 0:
-            print()
+        # if depth == 0:
+        #    print()
         
         if a==0:
             copy=slideUp(copy)
@@ -129,8 +129,8 @@ def maxValue(node,alpha,beta,depth,t_time):
     
             temp=minValue(newNode,alpha,beta,depth,t_time)
 
-            if depth == 0:
-                print()
+            # if depth == 0:
+            #    print()
 
             if temp.value>alpha.value:
                 alpha=temp
@@ -362,7 +362,7 @@ def H9(puzzle):
         return 0
 def evaluateh(n, puzzle, move):
     return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + 1.0 * H3(puzzle) + 1.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
-        puzzle) + 0.0 * H8(puzzle) + 0.0 * H9(puzzle)
+        puzzle) + 1.0 * H8(puzzle) + 1.0 * H9(puzzle)
 
 
 
