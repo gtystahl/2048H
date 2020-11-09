@@ -6,7 +6,7 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-MAX_DEPTH=2
+MAX_DEPTH=3
 TIME_MAX=.2
 
 
@@ -73,6 +73,9 @@ class value(object):
 
     
 class PlayerAI(BaseAI):
+    def __init__(self, hvals):
+        self.hv = hvals
+
     def getMove(self, grid):
         puzzle=transformGrid(grid.map)
         node=Node(puzzle)
@@ -80,11 +83,11 @@ class PlayerAI(BaseAI):
         alpha=value(None,MINUS_INFINITY)
         beta=value(None,PLUS_INFINITY)
         depth=0
-        res=maxValue(node,alpha,beta,depth,time.clock())     
+        res=maxValue(node,alpha,beta,depth,time.clock(), self.hv)
         return  traceMove(res.getNode(),puzzle)
 
 
-def maxValue(node,alpha,beta,depth,t_time):
+def maxValue(node,alpha,beta,depth,t_time, hv):
     
     "generate up(0) down(1) left(2) right(3) action nodes"
     
@@ -97,14 +100,16 @@ def maxValue(node,alpha,beta,depth,t_time):
     
     if depth==MAX_DEPTH or c_time>TIME_MAX:
         move=node.getMove()
-        evaluate=evaluateh(node,puzzle,move)
-        
+        evaluate=evaluateh(node,puzzle,move,hv)
+
+        # debugDisplay(puzzle)
+
         val=value(node,evaluate)
         
         return val
     
     
-    for a in [1,2,3,0]:
+    for a in [1,2,0,3]:
         copy=myCopy2(puzzle)
 
         # if depth == 0:
@@ -127,7 +132,7 @@ def maxValue(node,alpha,beta,depth,t_time):
           
             newNode.setMove(a)
     
-            temp=minValue(newNode,alpha,beta,depth,t_time)
+            temp=minValue(newNode,alpha,beta,depth,t_time, hv)
 
             # if depth == 0:
             #    print()
@@ -139,7 +144,7 @@ def maxValue(node,alpha,beta,depth,t_time):
                 return beta
     return alpha
 
-def minValue(node,alpha,beta,depth,t_time):
+def minValue(node,alpha,beta,depth,t_time, hv):
 
     "generate up(0) down(1) left(2) right(3) action nodes"
     depth=depth+1
@@ -149,12 +154,16 @@ def minValue(node,alpha,beta,depth,t_time):
     h=H1(puzzle)
     if h==0:
         move=node.getMove()
-        evaluate=evaluateh(node,puzzle,move)
+        evaluate = MINUS_INFINITY + evaluateh(node,puzzle,move, hv)
+
+        # debugDisplay(puzzle)
+
+        val=value(node,evaluate)
         
-        #val=value(node,evaluate)
         
-        
-        return evaluate
+        return val
+    # elif h > 8:
+    #    depth = MAX_DEPTH - 1
     
     for move in range(16):
         copy=myCopy2(puzzle) 
@@ -166,7 +175,7 @@ def minValue(node,alpha,beta,depth,t_time):
             newNode.setParent(node)
 
 
-            temp=maxValue(newNode,alpha,beta,depth,t_time)
+            temp=maxValue(newNode,alpha,beta,depth,t_time, hv)
 
             if temp.value<beta.value:
                 beta=temp
@@ -278,7 +287,12 @@ def H5(puzzle):
         for b in range(4):
             itemval = puzzle[(a * 4) + b][0]
             rowval += itemval
+            start = False
+
             if itemval != 0:
+                start = True
+
+            if start or a == 3:
                 if checkval < itemval:
                     rowgood = False
                 else:
@@ -300,7 +314,8 @@ def H6(puzzle):
                 if loc >= 0:
                     cell2 = puzzle[loc]
                     if cell[0] == cell2[0]:
-                        val += (cell[0] / 4)
+                        #val += (cell[0] / 4)
+                        val += cell[0]
                     # elif cell2[0]/2 == cell[0]:
                     #    val += (cell[0]/4)
             except:
@@ -354,17 +369,23 @@ def H8(puzzle):
     return 0
 
 def H9(puzzle):
-    # Tries to get the ai to not have a 0 in the corner
+    # Tries to get the ai to have the biggest value in the corner
     box = puzzle[12][0]
-    if box <= 4:
-        return -500
+    bc = biggestCell(puzzle)
+    if box != bc:
+        return -(bc * 2)
     else:
         return 0
-def evaluateh(n, puzzle, move):
-    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + 1.0 * H3(puzzle) + 1.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
-        puzzle) + 1.0 * H8(puzzle) + 1.0 * H9(puzzle)
+def evaluateh(n, puzzle, move, hv):
+    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + (hv[0] + 1.0) * H3(puzzle) + (hv[1] + 1.0) * H4(puzzle) + (hv[2] + 1.0) * H5(puzzle) + (hv[3] + 1.0) * H6(puzzle) + (hv[4] + 1.0) * H7(
+        puzzle) + (hv[0] + 1.0) * H8(puzzle) + (hv[5] + 1.0) * H9(puzzle)
 
-
+def biggestCell(puzzle):
+    biggest = 0
+    for i in range(len(puzzle)):
+        if puzzle[i][0] > biggest:
+            biggest = puzzle[i][0]
+    return biggest
 
 def isSame(s1,s2):
     for i in range(16):
@@ -376,7 +397,18 @@ def reset(s):
     for i in range(16):
         s[i][1]=0
         
-    
+def debugDisplay(puzzle):
+    a = 0
+    for i in range(len(puzzle)):
+        print(puzzle[i][0], end=" ")
+
+        a += 1
+        if a == 4:
+            print()
+            a = 0
+    print()
+
+
 def slideRight(s1):
     for out in range(3):
         for c in range(3,0,-1):

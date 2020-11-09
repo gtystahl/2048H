@@ -9,7 +9,7 @@ class Grid:
         # Good map
         self.map = [[0] * self.size for i in range(self.size)]
         # Fake map for testing
-        # self.map = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 2, 2]]
+        # self.map = [[2, 2, 0, 4], [4, 16, 2, 2], [2, 4, 8, 4], [256, 128, 128, 32]]
 
     # Make a Deep Copy of This Object
     def clone(self):

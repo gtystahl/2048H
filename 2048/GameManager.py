@@ -125,21 +125,35 @@ class GameManager:
         self.grid.setCellValue(cell, tileValue)
 
 def main():
-    lst = []
-    for i in range(10):
-        gameManager = GameManager()
-        playerAI  	= PlayerAI()
-        computerAI  = ComputerAI()
-        displayer 	= Displayer()
+    file = open("results.txt", "w")
+    file.close()
+    vals = [0]
+    for a in vals:
+        for b in vals:
+            for c in vals:
+                for d in vals:
+                    for e in vals:
+                        for f in vals:
+                            hvals = [a + 3,b,c + 3,d,e,f + 3]
+                            shvals = str(hvals)
+                            print(shvals)
+                            file = open("results.txt", "a")
+                            file.write("\n" + shvals + "\n")
+                            file.close()
+                            for i in range(100):
 
-        gameManager.setDisplayer(displayer)
-        gameManager.setPlayerAI(playerAI)
-        gameManager.setComputerAI(computerAI)
+                                gameManager = GameManager()
+                                playerAI  	= PlayerAI(hvals)
+                                computerAI  = ComputerAI()
+                                displayer 	= Displayer()
 
-        lst.append(gameManager.start())
+                                gameManager.setDisplayer(displayer)
+                                gameManager.setPlayerAI(playerAI)
+                                gameManager.setComputerAI(computerAI)
 
-    for i in lst:
-        print(i)
+                                file = open("results.txt", "a")
+                                file.write(str(gameManager.start()) + "\n")
+                                file.close()
 
 if __name__ == '__main__':
     main()
