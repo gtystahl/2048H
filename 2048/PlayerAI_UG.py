@@ -6,7 +6,7 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-MAX_DEPTH=3
+MAX_DEPTH=4
 TIME_MAX=.2
 
 
@@ -97,8 +97,14 @@ def maxValue(node,alpha,beta,depth,t_time, hv):
 
     c_time=time.clock()-t_time
     # c_time=0
-    
-    if depth==MAX_DEPTH or c_time>TIME_MAX:
+    changeval = 2
+    h = H1(puzzle)
+    if h <= 8:
+        changeval = 1
+    elif h < 5:
+        changeval = 0
+
+    if depth >= MAX_DEPTH - changeval or c_time>TIME_MAX:
         move=node.getMove()
         evaluate=evaluateh(node,puzzle,move,hv)
 
@@ -169,19 +175,24 @@ def minValue(node,alpha,beta,depth,t_time, hv):
         copy=myCopy2(puzzle) 
 
         if(copy[move][0]==0):
+            movevals = [2]
 
-            copy[move][0]=2
-            newNode=Node(copy)
-            newNode.setParent(node)
+            if h <= 3:
+                movevals.append(4)
+
+            for v in movevals:
+                copy[move][0]=v
+                newNode=Node(copy)
+                newNode.setParent(node)
 
 
-            temp=maxValue(newNode,alpha,beta,depth,t_time, hv)
+                temp=maxValue(newNode,alpha,beta,depth,t_time, hv)
 
-            if temp.value<beta.value:
-                beta=temp
+                if temp.value<beta.value:
+                    beta=temp
 
-            if beta.value<=alpha.value:
-                return alpha
+                if beta.value<=alpha.value:
+                    return alpha
     return beta
       
 
@@ -376,9 +387,18 @@ def H9(puzzle):
         return -(bc * 2)
     else:
         return 0
+
+def H10(puzzle):
+    # This goes straight for 2048
+    val = biggestCell(puzzle)
+    if val == 2048:
+        return PLUS_INFINITY
+    else:
+        return 0
+
 def evaluateh(n, puzzle, move, hv):
     return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + (hv[0] + 1.0) * H3(puzzle) + (hv[1] + 1.0) * H4(puzzle) + (hv[2] + 1.0) * H5(puzzle) + (hv[3] + 1.0) * H6(puzzle) + (hv[4] + 1.0) * H7(
-        puzzle) + (hv[0] + 1.0) * H8(puzzle) + (hv[5] + 1.0) * H9(puzzle)
+        puzzle) + (hv[0] + 1.0) * H8(puzzle) + (hv[5] + 1.0) * H9(puzzle) + H10(puzzle)
 
 def biggestCell(puzzle):
     biggest = 0

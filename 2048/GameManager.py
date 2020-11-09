@@ -134,7 +134,7 @@ def main():
                 for d in vals:
                     for e in vals:
                         for f in vals:
-                            hvals = [a + 3,b,c + 3,d,e,f + 3]
+                            hvals = [a + 3,b,c,d,e,f + 3]
                             shvals = str(hvals)
                             print(shvals)
                             file = open("results.txt", "a")
