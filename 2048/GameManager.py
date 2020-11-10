@@ -126,7 +126,7 @@ class GameManager:
 
 def main():
     lst = []
-    for i in range(10):
+    for i in range(1):
         gameManager = GameManager()
         playerAI  	= PlayerAI()
         computerAI  = ComputerAI()
