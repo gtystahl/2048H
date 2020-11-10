@@ -514,8 +514,8 @@ def H10(puzzle):
 
 def evaluateh(n, puzzle, move):
     # This is the function that adds all of the hueristics together
-    return 50.0 * H1(puzzle) + 50.0 * H2(n.parent.puzzle, move) + 4.0 * H3(puzzle) + 2.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
-        puzzle) + 1.0 * H8(puzzle) + 4.0 * H9(puzzle) + H10(puzzle)
+    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + 1.0 * H3(puzzle) + 1.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
+        puzzle) + 1.0 * H8(puzzle) + 1.0 * H9(puzzle) + H10(puzzle)
 
 def biggestCell(puzzle):
     # This is a function I made to get the biggest value
