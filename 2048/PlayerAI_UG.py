@@ -397,7 +397,7 @@ def H10(puzzle):
         return 0
 
 def evaluateh(n, puzzle, move, hv):
-    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + (hv[0] + 1.0) * H3(puzzle) + (hv[1] + 1.0) * H4(puzzle) + (hv[2] + 1.0) * H5(puzzle) + (hv[3] + 1.0) * H6(puzzle) + (hv[4] + 1.0) * H7(
+    return 50.0 * H1(puzzle) + 50.0 * H2(n.parent.puzzle, move) + (hv[0] + 1.0) * H3(puzzle) + (hv[1] + 1.0) * H4(puzzle) + (hv[2] + 1.0) * H5(puzzle) + (hv[3] + 1.0) * H6(puzzle) + (hv[4] + 1.0) * H7(
         puzzle) + (hv[0] + 1.0) * H8(puzzle) + (hv[5] + 1.0) * H9(puzzle) + H10(puzzle)
 
 def biggestCell(puzzle):
