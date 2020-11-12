@@ -4,6 +4,10 @@ from PlayerAI_UG   import PlayerAI
 from Displayer  import Displayer
 from random       import randint
 import time
+import multiprocessing
+
+# TODO: Learn about threading and multiprocessing to speed up this shit
+
 
 # Should be 2
 defaultInitialTiles = 2
@@ -125,21 +129,34 @@ class GameManager:
         self.grid.setCellValue(cell, tileValue)
 
 def main():
+    gameManager = GameManager()
+    playerAI  	= PlayerAI()
+    computerAI  = ComputerAI()
+    displayer 	= Displayer()
+
+    gameManager.setDisplayer(displayer)
+    gameManager.setPlayerAI(playerAI)
+    gameManager.setComputerAI(computerAI)
+
+    val = gameManager.start()
+    for key in playerAI.bigper:
+        av = 0
+        for item in playerAI.bigper[key]:
+            av += item
+        av = av / len(playerAI.bigper[key])
+        print(str(key) + ": " + str(av))
+    return val
+
+if __name__ == '__main__':
+    file = open("results.txt", "w")
+    file.close()
     lst = []
-    for i in range(1):
-        gameManager = GameManager()
-        playerAI  	= PlayerAI()
-        computerAI  = ComputerAI()
-        displayer 	= Displayer()
-
-        gameManager.setDisplayer(displayer)
-        gameManager.setPlayerAI(playerAI)
-        gameManager.setComputerAI(computerAI)
-
-        lst.append(gameManager.start())
+    for i in range(100):
+        res = main()
+        file = open("results.txt", "a")
+        file.write(str(res) + "\n")
+        lst.append(res)
+        file.close()
 
     for i in lst:
         print(i)
-
-if __name__ == '__main__':
-    main()
