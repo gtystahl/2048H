@@ -55,32 +55,15 @@ def traceMove(node,pzzle):
         node=node.getParent()
 
     if move1==-1:
-        dict = {1:0,2:0,3:0,0:0}
+        np=myCopy2(pzzle)
+        np0=H1(slideUp(np))
+        np=myCopy2(pzzle)
+        np1=H1(slideLeft(np))
 
-        np = myCopy2(pzzle)
-        d = slideDown(np)
-        dict[1] = spacesOpen(d)
-
-        np = myCopy2(pzzle)
-        l = slideLeft(np)
-        dict[2] = spacesOpen(l)
-
-        if (dict[1] == 0 and dict[2] == 0):
-            np = myCopy2(pzzle)
-            r = slideRight(np)
-            dict[3] = spacesOpen(r)
-
-            np = myCopy2(pzzle)
-            u = slideUp(np)
-            dict[0] = spacesOpen(u)
-
-        move1 = 1
-        biggest = 0
-        for num in dict:
-            if biggest < dict[num]:
-                biggest = dict[num]
-                move1 = num
-
+        if np0>=np1:
+            return 0
+        return 3
+    
     return move1
 
 
@@ -119,15 +102,28 @@ def maxValue(node,alpha,beta,depth,t_time):
 
     c_time=time.clock()-t_time
 
-    if depth >= MAX_DEPTH or c_time>TIME_MAX:
+    # This is for dynamic maxdepth to help with the speed problem
+    # This is the variable that holds the difference of max depth
+    changeval = 2
+
+    # This gets the amount of spaces available
+    h = H1(puzzle)
+    if h <= 8:
+        # If there is less than half left then switch to a deeper depth
+        changeval = 1
+    elif h < 5:
+        # If there is only a few left go even deeper
+        changeval = 0
+
+    if depth >= MAX_DEPTH - changeval or c_time>TIME_MAX:
         move=node.getMove()
-        evaluate = evaluateh(node, puzzle, move)
+        evaluate=evaluateh(node,puzzle,move)
 
         val=value(node,evaluate)
         
         return val
     
-    for a in [1,2,3,0]:
+    for a in [1,2,0,3]:
         copy=myCopy2(puzzle)
         
         if a==0:
@@ -161,11 +157,10 @@ def minValue(node,alpha,beta,depth,t_time):
     depth=depth+1
 
     puzzle=node.getPuzzle()
-    h=spacesOpen(puzzle)
+    h=H1(puzzle)
     if h==0:
         move=node.getMove()
-        ev = evaluateh(node, puzzle, move)
-        evaluate = MINUS_INFINITY + ev
+        evaluate = MINUS_INFINITY + evaluateh(node,puzzle,move)
 
         val=value(node,evaluate)
         
@@ -179,7 +174,7 @@ def minValue(node,alpha,beta,depth,t_time):
             movevals = [2]
 
             # If there are only three available spots left, add 4 to the list of possibles
-            if h <= 1:
+            if h <= 3:
                 movevals.append(4)
 
             # This goes through each of the possible placeable values
@@ -209,7 +204,7 @@ def myCopy2(s):
     return n
 
 
-def spacesOpen(puzzle):
+def H1(puzzle):
     # This gets the number of free spaces. (Made in class)
 
     count = 0
@@ -219,37 +214,113 @@ def spacesOpen(puzzle):
 
     return count
 
-def H1(puzzle):
-    left = spacesOpen(puzzle)
-    if left > 3:
-        return -left
-    else:
-        return left
 
 def H2(puzzle, move):
     # Gets the amount of merges done before the current puzzle to now
 
     copy = myCopy2(puzzle)
     numFree = H1(puzzle)  # number of free spaces before move
-    if numFree > 5:
-        if move == 0:
-            copy = slideUp(copy)
-        elif move == 1:
-            copy = slideDown(copy)
-        elif move == 2:
-            copy = slideLeft(copy)
-        else:
-            copy = slideRight(copy)
-
-        curFree = H1(copy)  # number of free tiles for speculative board
-
-        diff = curFree - numFree  # diff is the number of merges
-
-        return diff
+    if move == 0:
+        copy = slideUp(copy)
+    elif move == 1:
+        copy = slideDown(copy)
+    elif move == 2:
+        copy = slideLeft(copy)
     else:
-        return 0
+        copy = slideRight(copy)
+
+    curFree = H1(copy)  # number of free tiles for speculative board
+
+    diff = curFree - numFree  # diff is the number of merges
+
+    return diff
+
 
 def H3(puzzle):
+    # This tries to get all the higher values towards the bottom
+
+    # row vals
+    rv = []
+
+    # Goes through each of the rows
+    for a in range(4):
+        # The value of the row
+        val = 0
+        # Goes through each item in the row
+        for b in range(4):
+            # Gets the value
+            itemval = puzzle[(a * 4) + b][0]
+
+            # Adds it to the overall row val
+            val += itemval
+
+        # Adds the rowval to rowvals
+        rv.append(val)
+
+    # Used later to determine if the rows are in order
+    good = True
+
+    # This is used to hold the previous rows value
+    lastrowval = -1
+
+    # This is the total value of all rows
+    totalval = 0
+
+    # Goes through each rowval
+    for rowval in rv:
+        # If the new row is less than the last row then then it is not in order
+        if rowval < lastrowval:
+            good = False
+        # Sets lastrowval to be the current row
+        lastrowval = rowval
+
+        # Adds the rowval to the total
+        totalval += rowval
+
+    # If it is in order return the total
+    if good:
+        return totalval
+
+    # If it is not in order then return nothing
+    return 0
+
+
+def H4(puzzle):
+    # This gets the amount of higher valued things
+
+    # This is the value returned at the end
+    val = 0
+
+    # This will hold the values currently on the board and the number of times they appear
+    nums = {}
+
+    # Go through each item in the puzzle
+    for i in range(len(puzzle)):
+        # Gets the value
+        itemval = puzzle[i][0]
+        # If the value is not zero
+        if itemval != 0:
+            # If the item is already in the dictionary
+            if itemval in nums:
+                # Add one to the number of appearences
+                nums[itemval] += 1
+            else:
+                # If it isnt then add it and set the val to 1
+                nums[itemval] = 1
+
+    # For each key in the dictionary
+    for key in nums:
+        # Gets the number of times the number appears
+        num = nums[key]
+
+        # Does some math to make sure the higher value is valued more than multiple small values
+        val += (math.log2(key) ** 3) * num
+
+    # Returns the total value of all numbers and their appearences
+    return val
+
+
+def H5(puzzle):
     # This tries to get rows in the order from greatest on the left to least on right
 
     # This is the variable that will be returned
@@ -274,11 +345,6 @@ def H3(puzzle):
             # Adds the value to the rows total
             rowval += itemval
 
-            if itemval != 0:
-                if checkval < itemval:
-                    rowgood = False
-            checkval = itemval
-            """
             # This is for when zeros are leading
             start = False
 
@@ -294,52 +360,12 @@ def H3(puzzle):
                 else:
                     # If it is good then set the next checkval
                     checkval = itemval
-            """
         # If the row is in order, add the rows val to the return val
         if rowgood:
-            val += rowval * (a + 1)
-        else:
-            val -= rowval * (a + 1)
+            val += rowval
     # Return the total vals of the good rows
     return val
 
-def H4(puzzle):
-    # This tries to get the highest values in line from bottom being highest to top being lowest
-
-    val = 0
-    for a in range(4):
-        columnval = 0
-        lastval = MINUS_INFINITY
-        columngood = True
-        for b in range(4):
-            cellval = puzzle[(b*4) + a][0]
-            if cellval != 0:
-                if lastval > cellval:
-                    columngood = False
-            lastval = cellval
-            columnval += cellval
-        if columngood:
-            val += columnval * (4 - a)
-        else:
-            val -= columnval * (4 - a)
-
-    return val
-
-def H5(puzzle):
-    # Tries to get the ai to have the biggest value in the bottom left corner
-
-    # Gets the bottom left row
-    box = puzzle[12][0]
-
-    # Gets the biggest cell in the puzzle
-    bc = biggestCell(puzzle)
-
-    # If the biggest val is not in the bottom left, return double the negative of the biggest value
-    if box != bc:
-        return -bc
-    else:
-        # else return nothing
-        return bc
 
 def H6(puzzle):
     # Tries to get the same stuff next to each other
@@ -373,11 +399,12 @@ def H6(puzzle):
                     # checks to see if they are equal
                     if cell[0] == cell2[0]:
                         # If they are add to the total val
-                        val += cell[0]
+                        val += cell[0]/2
             except:
                 val += 0
     # returns the vals that are the same
     return val
+
 
 def H7(puzzle):
     # Tries to make sure that there arent stuff stuck where it cant be merged
@@ -396,7 +423,6 @@ def H7(puzzle):
             rcv = math.log2(cell[0])
             # The number of bad spaces next to it
             numbad = 0
-            biggest = 0
             lst = [1, -1, 4, -4]
             for num in lst:
                 try:
@@ -415,19 +441,62 @@ def H7(puzzle):
                             rcv2 = math.log2(cell2[0])
 
                             # Checks to make sure the exponents arent too far apart
-                            if not (rcv2 - 1 < rcv < rcv2 + 1):
+                            if not (rcv2 - 3 < rcv < rcv2 + 3):
                                 # If they are add to the numbad
                                 numbad += 1
-                                if cell2[0] > biggest:
-                                    biggest = cell2[0]
                 except:
-                    numbad += 1
+                    val += 0
             # If the number of bad spaces is over half
             if numbad > 2:
                 # Subtract from the eval total
-                val -= biggest
+                val -= cell[0]
     # Return the total val
     return val
+
+def H8(puzzle):
+    # This tries to get all the higher value on the bottom row
+
+    # Other row vals
+    orv = []
+
+    # Goes through each row
+    for a in range(4):
+        # This is the rows val
+        val = 0
+
+        # For each item in the row
+        for b in range(4):
+            # Gets the items val
+            itemval = puzzle[(a * 4) + b][0]
+
+            # Adds the val to the rowtotal
+            val += itemval
+        # If the rows is not the bottom, add it to the other row list
+        if a != 3:
+            orv.append(val)
+        else:
+            # If it is the bottom row, check to make sure the bottom row has the highest value
+            if val >= max(orv):
+                # If it is return the value of the row
+                return val
+    # If it isnt the highest row then return nothing
+    return 0
+
+def H9(puzzle):
+    # Tries to get the ai to have the biggest value in the bottom left corner
+
+    # Gets the bottom left row
+    box = puzzle[12][0]
+
+    # Gets the biggest cell in the puzzle
+    bc = biggestCell(puzzle)
+
+    # If the biggest val is not in the bottom left, return double the negative of the biggest value
+    if box != bc:
+        return -(bc * 2)
+    else:
+        # else return nothing
+        return 0
 
 def H10(puzzle):
     # This goes straight for 2048. Washes out some other hueristics but does so to complete the main objective
@@ -444,22 +513,9 @@ def H10(puzzle):
 
 
 def evaluateh(n, puzzle, move):
-    # debugDisplay(puzzle)
     # This is the function that adds all of the hueristics together
-    h1 = 1.0 * H1(puzzle) # Spaces open
-    h2 = 1.0 * H2(n.parent.puzzle, move) # Num of merges
-    h3 = 1.0 * H3(puzzle) * 10 # Left to right
-    h4 = 1.0 * H4(puzzle) * 10 # Top to Bottom
-    h5 = 1.0 * H5(puzzle) * 50 # Biggest in bottom left
-    h6 = 1.0 * H6(puzzle) # Same next to each other
-    h7 = 1.0 * H7(puzzle) # Bad spaces
-    # h10 = 1.0 * H10(puzzle) # Get to 2048
-
-    total = h1 + h2 + h3 + h4 + h5 + h6 + h7
-
-    # total = h3 + h4 + h5 + h6
-
-    return total
+    return 1.0 * H1(puzzle) + 1.0 * H2(n.parent.puzzle, move) + 1.0 * H3(puzzle) + 1.0 * H4(puzzle) + 1.0 * H5(puzzle) + 1.0 * H6(puzzle) + 1.0 * H7(
+        puzzle) + 1.0 * H8(puzzle) + 1.0 * H9(puzzle) + H10(puzzle)
 
 def biggestCell(puzzle):
     # This is a function I made to get the biggest value
@@ -489,7 +545,6 @@ def debugDisplay(puzzle):
     # This was used for debugging, allowed me to see the board before it was evaluated
 
     # Below goes through the whole puzzle and prints it to the screen
-    print()
     a = 0
     for i in range(len(puzzle)):
         print(puzzle[i][0], end=" ")
