@@ -139,12 +139,6 @@ def main():
     gameManager.setComputerAI(computerAI)
 
     val = gameManager.start()
-    for key in playerAI.bigper:
-        av = 0
-        for item in playerAI.bigper[key]:
-            av += item
-        av = av / len(playerAI.bigper[key])
-        print(str(key) + ": " + str(av))
     return val
 
 if __name__ == '__main__':

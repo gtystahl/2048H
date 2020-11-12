@@ -18,7 +18,7 @@ from BaseAI import BaseAI
 import math
 MINUS_INFINITY=-10000000
 PLUS_INFINITY=10000000
-MAX_DEPTH=3
+MAX_DEPTH=4
 TIME_MAX=.2
 
 class Node(object):
@@ -97,8 +97,6 @@ class value(object):
 
     
 class PlayerAI(BaseAI):
-    def __init__(self):
-        self.bigper = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
 
     def getMove(self, grid):
         puzzle=transformGrid(grid.map)
@@ -107,11 +105,11 @@ class PlayerAI(BaseAI):
         alpha=value(None,MINUS_INFINITY)
         beta=value(None,PLUS_INFINITY)
         depth=0
-        res=maxValue(node,alpha,beta,depth,time.clock(), self.bigper)
+        res=maxValue(node,alpha,beta,depth,time.clock())
         return  traceMove(res.getNode(),puzzle)
 
 
-def maxValue(node,alpha,beta,depth,t_time, bigper):
+def maxValue(node,alpha,beta,depth,t_time):
     
     "generate up(0) down(1) left(2) right(3) action nodes"
     
@@ -123,16 +121,13 @@ def maxValue(node,alpha,beta,depth,t_time, bigper):
 
     if depth >= MAX_DEPTH or c_time>TIME_MAX:
         move=node.getMove()
-        evaluate, per = evaluateh(node, puzzle, move)
-
-        for i in range(len(per)):
-            bigper[i].append(per[i])
+        evaluate = evaluateh(node, puzzle, move)
 
         val=value(node,evaluate)
         
         return val
     
-    for a in [1,2,0,3]:
+    for a in [1,2,3,0]:
         copy=myCopy2(puzzle)
         
         if a==0:
@@ -151,7 +146,7 @@ def maxValue(node,alpha,beta,depth,t_time, bigper):
           
             newNode.setMove(a)
     
-            temp=minValue(newNode,alpha,beta,depth,t_time, bigper)
+            temp=minValue(newNode,alpha,beta,depth,t_time)
 
             if temp.value>alpha.value:
                 alpha=temp
@@ -160,7 +155,7 @@ def maxValue(node,alpha,beta,depth,t_time, bigper):
                 return beta
     return alpha
 
-def minValue(node,alpha,beta,depth,t_time, bigper):
+def minValue(node,alpha,beta,depth,t_time):
 
     "generate up(0) down(1) left(2) right(3) action nodes"
     depth=depth+1
@@ -169,11 +164,8 @@ def minValue(node,alpha,beta,depth,t_time, bigper):
     h=spacesOpen(puzzle)
     if h==0:
         move=node.getMove()
-        ev, per = evaluateh(node, puzzle, move)
+        ev = evaluateh(node, puzzle, move)
         evaluate = MINUS_INFINITY + ev
-
-        for i in range(len(per)):
-            bigper[i].append(per[i])
 
         val=value(node,evaluate)
         
@@ -196,7 +188,7 @@ def minValue(node,alpha,beta,depth,t_time, bigper):
                 newNode=Node(copy)
                 newNode.setParent(node)
 
-                temp=maxValue(newNode,alpha,beta,depth,t_time, bigper)
+                temp=maxValue(newNode,alpha,beta,depth,t_time)
 
                 if temp.value<beta.value:
                     beta=temp
@@ -461,15 +453,13 @@ def evaluateh(n, puzzle, move):
     h5 = 1.0 * H5(puzzle) * 50 # Biggest in bottom left
     h6 = 1.0 * H6(puzzle) # Same next to each other
     h7 = 1.0 * H7(puzzle) # Bad spaces
-    h10 = 1.0 * H10(puzzle) # Get to 2048
+    # h10 = 1.0 * H10(puzzle) # Get to 2048
 
-    total = h1 + h2 + h3 + h4 + h5 + h6 + h7 + h10
+    total = h1 + h2 + h3 + h4 + h5 + h6 + h7
 
-    percents = []
-    if total != 0:
-        percents = [h1/total, h2/total, h3/total, h4/total, h5/total, h6/total, h7/total, h10/total]
+    # total = h3 + h4 + h5 + h6
 
-    return total, percents
+    return total
 
 def biggestCell(puzzle):
     # This is a function I made to get the biggest value
