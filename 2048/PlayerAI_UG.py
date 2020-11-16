@@ -55,27 +55,39 @@ def traceMove(node,pzzle):
         node=node.getParent()
 
     if move1==-1:
+        # This is a dictionary that will hold the amount of gain per direction
         dict = {1:0,2:0,3:0,0:0}
 
+        # This gets the amount of free spaces gained from going down and sets it to dict[1]
         np = myCopy2(pzzle)
         d = slideDown(np)
         dict[1] = spacesOpen(d)
 
+        # This gets the amount of free spaces gained from going left and sets it to dict[2]
         np = myCopy2(pzzle)
         l = slideLeft(np)
         dict[2] = spacesOpen(l)
 
+        # If it cannot go down or left
         if (dict[1] == 0 and dict[2] == 0):
+
+            # This gets the amount of free spaces gained from going right and sets it to dict[3]
             np = myCopy2(pzzle)
             r = slideRight(np)
             dict[3] = spacesOpen(r)
 
+            # This gets the amount of free spaces gained from going up and sets it to dict[0]
             np = myCopy2(pzzle)
             u = slideUp(np)
             dict[0] = spacesOpen(u)
 
+        # This sets the move to 1 by default
         move1 = 1
+
+        # This will be the biggest spaces available in the different directions
         biggest = 0
+
+        # This goes through each of the free spaces to get the biggest and return the best move
         for num in dict:
             if biggest < dict[num]:
                 biggest = dict[num]
@@ -220,6 +232,7 @@ def spacesOpen(puzzle):
     return count
 
 def H1(puzzle):
+    # This tries to get the number of spaces to be three or less. Inspired by class article
     left = spacesOpen(puzzle)
     if left > 3:
         return -left
@@ -227,7 +240,7 @@ def H1(puzzle):
         return left
 
 def H2(puzzle, move):
-    # Gets the amount of merges done before the current puzzle to now
+    # Gets the amount of merges done before the current puzzle to now (Done in class)
 
     copy = myCopy2(puzzle)
     numFree = H1(puzzle)  # number of free spaces before move
@@ -278,23 +291,7 @@ def H3(puzzle):
                 if checkval < itemval:
                     rowgood = False
             checkval = itemval
-            """
-            # This is for when zeros are leading
-            start = False
 
-            # If we hit an item that not zero that is the start
-            if itemval != 0:
-                start = True
-
-            # The a3 part is to make sure there are as little 0s in the bottom row as possible
-            if start or a == 3:
-                # If the lastval is less than the new val the row is bad
-                if checkval < itemval:
-                    rowgood = False
-                else:
-                    # If it is good then set the next checkval
-                    checkval = itemval
-            """
         # If the row is in order, add the rows val to the return val
         if rowgood:
             val += rowval * (a + 1)

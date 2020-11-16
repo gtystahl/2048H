@@ -145,7 +145,7 @@ if __name__ == '__main__':
     file = open("results.txt", "w")
     file.close()
     lst = []
-    for i in range(100):
+    for i in range(10):
         res = main()
         file = open("results.txt", "a")
         file.write(str(res) + "\n")
