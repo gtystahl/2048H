@@ -5,8 +5,14 @@
 # Purpose: Win the 2048 puzzle 50% of the time
 
 # Revision History:
+# Date          Author          Revision
+# 11/9/2020     Greg Tystahl    Completely reworked to better follow the article
+# 11/23/2020    Greg Tystahl    Added in comments and article link
 
 # How to run: Run the GameManager.py and it should take care of everything
+
+# Article to which I gathered Heuristic ideas:
+# https://www.businessinsider.com/artificial-intelligence-crushed-all-human-records-in-the-addictive-tile-game-2048--heres-how-2015-5
 
 # (I am only commenting the stuff that I added)
 
@@ -232,6 +238,7 @@ def spacesOpen(puzzle):
     return count
 
 def H1(puzzle):
+    # Reworked the class H1 to follow tip 3 in article
     left = spacesOpen(puzzle)
     if left > 3:
         return -left
@@ -263,6 +270,7 @@ def H2(puzzle, move):
 
 def H3(puzzle):
     # This tries to get rows in the order from greatest on the left to least on right
+    # Gets inspiration from tip 2 in article
 
     # This is the variable that will be returned
     val = 0
@@ -301,6 +309,7 @@ def H3(puzzle):
 
 def H4(puzzle):
     # This tries to get the highest values in line from bottom being highest to top being lowest
+    # Gets inspiration from tip 2 in article
 
     val = 0
     for a in range(4):
@@ -323,6 +332,7 @@ def H4(puzzle):
 
 def H5(puzzle):
     # Tries to get the ai to have the biggest value in the bottom left corner
+    # This stems from tip 1 in article
 
     # Gets the bottom left row
     box = puzzle[12][0]
