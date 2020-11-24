@@ -55,27 +55,39 @@ def traceMove(node,pzzle):
         node=node.getParent()
 
     if move1==-1:
-        dict = {1:0,2:0,3:0,0:0}
+        # This is a modified way to get the next best move based on spaces available
 
+        # This holds the values of the moves
+        dict = {1: MINUS_INFINITY * 10, 2: MINUS_INFINITY * 10, 3: MINUS_INFINITY * 10, 0: MINUS_INFINITY * 10}
+
+        p = Node(pzzle)
+        curr = Node(pzzle)
+        curr.parent = p
+
+        # These get the moves availalbe from the current puzzle to the move specified
         np = myCopy2(pzzle)
         d = slideDown(np)
-        dict[1] = spacesOpen(d)
+        if not isSame(pzzle, d):
+            dict[1] = evaluateh(curr, d, 1)
 
         np = myCopy2(pzzle)
         l = slideLeft(np)
-        dict[2] = spacesOpen(l)
+        if not isSame(pzzle, l):
+            dict[2] = evaluateh(curr, l, 2)
 
-        if (dict[1] == 0 and dict[2] == 0):
-            np = myCopy2(pzzle)
-            r = slideRight(np)
-            dict[3] = spacesOpen(r)
+        np = myCopy2(pzzle)
+        r = slideRight(np)
+        if not isSame(pzzle, r):
+            dict[3] = evaluateh(curr, r, 3)
 
-            np = myCopy2(pzzle)
-            u = slideUp(np)
-            dict[0] = spacesOpen(u)
+        np = myCopy2(pzzle)
+        u = slideUp(np)
+        if not isSame(pzzle, u):
+            dict[0] = evaluateh(curr, u, 0)
 
+        # This gets the best move out of the moves above
         move1 = 1
-        biggest = 0
+        biggest = MINUS_INFINITY * 10
         for num in dict:
             if biggest < dict[num]:
                 biggest = dict[num]
@@ -278,23 +290,7 @@ def H3(puzzle):
                 if checkval < itemval:
                     rowgood = False
             checkval = itemval
-            """
-            # This is for when zeros are leading
-            start = False
 
-            # If we hit an item that not zero that is the start
-            if itemval != 0:
-                start = True
-
-            # The a3 part is to make sure there are as little 0s in the bottom row as possible
-            if start or a == 3:
-                # If the lastval is less than the new val the row is bad
-                if checkval < itemval:
-                    rowgood = False
-                else:
-                    # If it is good then set the next checkval
-                    checkval = itemval
-            """
         # If the row is in order, add the rows val to the return val
         if rowgood:
             val += rowval * (a + 1)
@@ -429,20 +425,6 @@ def H7(puzzle):
     # Return the total val
     return val
 
-def H10(puzzle):
-    # This goes straight for 2048. Washes out some other hueristics but does so to complete the main objective
-
-    # Gets the biggest cells value
-    val = biggestCell(puzzle)
-
-    # If the value is 2048, return positive infinity
-    if val == 2048:
-        return PLUS_INFINITY
-    else:
-        # If it is not then this h is nothing
-        return 0
-
-
 def evaluateh(n, puzzle, move):
     # debugDisplay(puzzle)
     # This is the function that adds all of the hueristics together
@@ -453,11 +435,8 @@ def evaluateh(n, puzzle, move):
     h5 = 1.0 * H5(puzzle) * 50 # Biggest in bottom left
     h6 = 1.0 * H6(puzzle) # Same next to each other
     h7 = 1.0 * H7(puzzle) # Bad spaces
-    # h10 = 1.0 * H10(puzzle) # Get to 2048
 
     total = h1 + h2 + h3 + h4 + h5 + h6 + h7
-
-    # total = h3 + h4 + h5 + h6
 
     return total
 
