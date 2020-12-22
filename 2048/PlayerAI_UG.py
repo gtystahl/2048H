@@ -278,23 +278,7 @@ def H3(puzzle):
                 if checkval < itemval:
                     rowgood = False
             checkval = itemval
-            """
-            # This is for when zeros are leading
-            start = False
 
-            # If we hit an item that not zero that is the start
-            if itemval != 0:
-                start = True
-
-            # The a3 part is to make sure there are as little 0s in the bottom row as possible
-            if start or a == 3:
-                # If the lastval is less than the new val the row is bad
-                if checkval < itemval:
-                    rowgood = False
-                else:
-                    # If it is good then set the next checkval
-                    checkval = itemval
-            """
         # If the row is in order, add the rows val to the return val
         if rowgood:
             val += rowval * (a + 1)
@@ -429,20 +413,6 @@ def H7(puzzle):
     # Return the total val
     return val
 
-def H10(puzzle):
-    # This goes straight for 2048. Washes out some other hueristics but does so to complete the main objective
-
-    # Gets the biggest cells value
-    val = biggestCell(puzzle)
-
-    # If the value is 2048, return positive infinity
-    if val == 2048:
-        return PLUS_INFINITY
-    else:
-        # If it is not then this h is nothing
-        return 0
-
-
 def evaluateh(n, puzzle, move):
     # debugDisplay(puzzle)
     # This is the function that adds all of the hueristics together
@@ -453,11 +423,8 @@ def evaluateh(n, puzzle, move):
     h5 = 1.0 * H5(puzzle) * 50 # Biggest in bottom left
     h6 = 1.0 * H6(puzzle) # Same next to each other
     h7 = 1.0 * H7(puzzle) # Bad spaces
-    # h10 = 1.0 * H10(puzzle) # Get to 2048
 
     total = h1 + h2 + h3 + h4 + h5 + h6 + h7
-
-    # total = h3 + h4 + h5 + h6
 
     return total
 

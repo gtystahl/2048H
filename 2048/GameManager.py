@@ -142,10 +142,13 @@ def main():
     return val
 
 if __name__ == '__main__':
+    # This is the variable that holds how many times the solver will run
+    times = 10
+
     file = open("results.txt", "w")
     file.close()
     lst = []
-    for i in range(100):
+    for i in range(times):
         res = main()
         file = open("results.txt", "a")
         file.write(str(res) + "\n")
